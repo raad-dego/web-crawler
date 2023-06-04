@@ -2,6 +2,7 @@
   "name": "web_crawler",
   "version": "1.0.0",
   "description": "web crawler for boot.dev guided project",
+  "repository": "https://github.com/raad-dego/web-crawler",
   "main": "index.js",
   "scripts": {
     "start": "node main.js",
