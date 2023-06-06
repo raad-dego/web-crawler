@@ -1,5 +1,5 @@
 const { test, expect } = require('@jest/globals')
-const { normalizeURL } = require('./crawl.js')
+const { normalizeURL, getURLsFromHTML } = require('./crawl.js')
 
 test('normalizeURL should convert URLs to lowercase and remove "http://" or "https://" prefixes', () => {
     const inputURL = 'https://wagslane.dev/path'
@@ -55,3 +55,34 @@ test('normalizeURL should handle URLs with different top-level domains (TLDs)', 
     expect(normalizedURL).toBe(expectedOutput)
 })
 
+test('getURLsFromHTML should convert relative URLs to absolute URLs', () => {
+    const htmlBody = `
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    `
+    const baseURL = 'https://example.com'
+
+    const result = getURLsFromHTML(htmlBody, baseURL)
+
+    expect(result).toEqual([
+      'https://example.com/about',
+      'https://example.com/contact'
+    ])
+  })
+
+  test('getURLsFromHTML should find all <a> tags in the HTML body', () => {
+    const htmlBody = `
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/blog">Blog</a>
+    `
+    const baseURL = 'https://example.com'
+
+    const result = getURLsFromHTML(htmlBody, baseURL)
+
+    expect(result).toEqual([
+      'https://example.com/about',
+      'https://example.com/contact',
+      'https://example.com/blog'
+    ])
+  })
