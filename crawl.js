@@ -1,4 +1,6 @@
-const { JSDOM } = require('jsdom')
+// const { JSDOM } = require('jsdom')
+import { JSDOM } from 'jsdom';
+import fetch from 'node-fetch'
 
 function normalizeURL(url) {
     if (url === '') {
@@ -11,9 +13,9 @@ function normalizeURL(url) {
 
 
 function getURLsFromHTML(htmlBody, baseURL) {
+    const urls = []
     const dom = new JSDOM(htmlBody)
     const anchors = dom.window.document.querySelectorAll('a')
-    const urls = []
 
     anchors.forEach((anchor) => {
         let url = anchor.href
@@ -30,31 +32,50 @@ function getURLsFromHTML(htmlBody, baseURL) {
     return urls
 }
 
-async function crawlPage(baseURL) {
-    console.log(`crawling ${baseURL}`)
+async function crawlPage(baseURL, currentURL, pages) {
+    const baseURLObj = new URL(baseURL)
+    const currentURLObj = new URL(currentURL)
+
+    // Conditional for same domain
+    if (baseURLObj.hostname !== currentURLObj.hostname) {
+        // Removed console log here due to excesive logs
+        return pages
+    }
+    const normURL = normalizeURL(currentURL)
+    // Conditional for url check in pages crawled
+    if (pages[normURL] > 0) {
+        pages[normURL]++
+        return pages
+    }
+
+    pages[normURL] = 1
+
+
+    console.log(`crawling ${currentURL}`)
+    let htmlBody = ""
     try {
-        const response = await fetch(baseURL)
-        if (response.status < 400 || response.status >= 500) {
+        const response = await fetch(currentURL)
+        // Conditional for unwanted status errors
+        if (response.status >= 400) {
             console.error(`HTTP error: ${response.status}`)
-            return
+            return pages
         }
         const contentType = response.headers.get('Content-Type')
-        console.log(contentType)
-        if (contentType.inclide !== 'text/html') {
-            console.error("non-html response: ${con}")
-            return
+        // Conditional for wrong content type
+        if (!contentType.includes('text/html')) {
+            console.error(`non-html response: ${contentType}`)
+            return pages
         }
-        console.log(response.text())
-        console.log(await response.text())
-        console.log(response.body)
+        htmlBody = await response.text()
     } catch (err) {
-        console.log(err.message)
+        console.log(`${err.message}`)
     }
+    const urls = getURLsFromHTML(htmlBody, baseURL)
+    for (const url of urls) {
+        pages = await crawlPage(baseURL, url, pages)
+    }
+    return pages
 }
 
 
-module.exports = {
-    getURLsFromHTML,
-    normalizeURL,
-    crawlPage
-}
+export { crawlPage, normalizeURL, getURLsFromHTML }
