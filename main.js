@@ -1,5 +1,6 @@
 // const { crawlPage }  = require("./crawl.js")
-import { crawlPage } from "./crawl.js";
+import { crawlPage } from "./crawl.js"
+import { printReport } from "./report.js";
 
 
 async function main() {
@@ -11,7 +12,9 @@ async function main() {
     console.log(`We are starting at ${baseURL}`)
     console.log(`crawling: ${baseURL}`)
 
-    await crawlPage(baseURL, baseURL, new Map())
+    const pages = await crawlPage(baseURL, baseURL, new Map())
+    printReport(pages)
+
 }
 main().catch((error) => {
     console.error(error);

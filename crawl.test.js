@@ -1,6 +1,6 @@
 const { test, expect } = require('@jest/globals')
 const { normalizeURL, getURLsFromHTML, crawlPage } = require('./crawl.js')
-const fetch = require('node-fetch');
+const fetch = require('node-fetch')
 
 
 test('normalizeURL should convert URLs to lowercase and remove "http://" or "https://" prefixes', () => {
